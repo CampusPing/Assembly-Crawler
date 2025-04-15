@@ -1,7 +1,14 @@
+val groupName = "com.campusping"
+val projectArtifactId = "assembly-crawler"
+val currentVersion = "1.0.0-rc1"
+
 plugins {
     kotlin("jvm") version "1.9.0"
-    id("maven-publish")
+    `maven-publish`
 }
+
+group = groupName
+version = currentVersion
 
 repositories {
     mavenCentral()
@@ -18,17 +25,25 @@ tasks.test {
     useJUnitPlatform()
 }
 
-kotlin {
-    jvmToolchain(17)
+tasks {
+    compileKotlin {
+        kotlinOptions.jvmTarget = "17"
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = "17"
+    }
+    test {
+        useJUnitPlatform()
+    }
 }
 
 publishing {
     publications {
-        create("maven-public", MavenPublication::class) {
-            groupId = "com.campusping"
-            artifactId = "assembly-crawler"
-            version = "1.0.0-rc1"
-            from(components.getByName("java"))
+        register<MavenPublication>("maven") {
+            groupId = groupName
+            artifactId = projectArtifactId
+            version = currentVersion
+            from(components["kotlin"])
         }
     }
 }

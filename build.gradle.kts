@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.0"
+    id("maven-publish")
 }
 
 repositories {
@@ -19,4 +20,15 @@ tasks.test {
 
 kotlin {
     jvmToolchain(17)
+}
+
+publishing {
+    publications {
+        create("maven-public", MavenPublication::class) {
+            groupId = "com.campusping"
+            artifactId = "assembly-crawler"
+            version = "1.0.0-rc1"
+            from(components.getByName("java"))
+        }
+    }
 }

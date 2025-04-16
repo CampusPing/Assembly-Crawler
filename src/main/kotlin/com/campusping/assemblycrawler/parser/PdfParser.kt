@@ -41,6 +41,8 @@ internal fun parsePdf(fileName: String): List<Assembly> {
 }
 
 private fun parseAssemblyData(rawText: String): List<Assembly> {
+    val noDuplicatedRawText = rawText.removeDuplicateLines()
+
     val result = mutableListOf<Assembly>()
     val dateRegex = Regex("""\d{4}\.\s*\d{2}\.\s*\d{2}""")
     val timeRangeRegex = Regex("""(\d{2}:\d{2})~(\d{2}:\d{2})""")
@@ -48,14 +50,14 @@ private fun parseAssemblyData(rawText: String): List<Assembly> {
         """(\d{2}:\d{2}~(?:\d{2}:\d{2})?)\s+(.+?)\s*(?:<(.+?)>)?\s*(\d{1,3}(?:,\d{3})*|\d+)(?:명|)\s+([^\n<]+)"""
     )
 
-    val dateMatches = dateRegex.findAll(rawText).toList()
+    val dateMatches = dateRegex.findAll(noDuplicatedRawText).toList()
     if (dateMatches.isEmpty()) return result
 
     for (dateMatch in dateMatches) {
         val dateStr = dateMatch.value.replace(" ", "")
         val date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy.MM.dd"))
         val index = dateMatch.range.last
-        val restText = rawText.substring(index)
+        val restText = noDuplicatedRawText.substring(index)
 
         for (match in entryRegex.findAll(restText)) {
             val timeRange = match.groupValues[1]
@@ -92,3 +94,12 @@ private fun parseAssemblyData(rawText: String): List<Assembly> {
 
     return result
 }
+
+private fun String.removeDuplicateLines() = this
+    .lines()
+    .fold(mutableListOf<String>()) { acc, line ->
+        if (acc.isEmpty() || acc.last().trim() != line.trim()) {
+            acc.add(line)
+        }
+        acc
+    }.joinToString("\n")

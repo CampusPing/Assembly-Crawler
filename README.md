@@ -23,6 +23,7 @@ fun main() {
     val oneDayAssemblies: List<OneDayAssembly> = AssemblyCrawler.crawl(pageSize = 1)
 }
 ```
+- `pageSize: Int` : 한 페이지당 10개의 집회 정보를 제공합니다.
 
 <hr>
 

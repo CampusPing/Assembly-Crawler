@@ -1,6 +1,6 @@
 val groupName = "com.campusping"
 val projectArtifactId = "assembly-crawler"
-val currentVersion = "1.0.0-rc1"
+val currentVersion = "1.0.0-rc6"
 
 plugins {
     kotlin("jvm") version "1.9.0"

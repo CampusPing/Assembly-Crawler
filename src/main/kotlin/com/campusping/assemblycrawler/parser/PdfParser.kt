@@ -4,7 +4,7 @@ import com.campusping.assemblycrawler.model.Assembly
 import com.campusping.assemblycrawler.other.generateId
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
-import java.nio.file.Paths.*
+import java.nio.file.Paths.get
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -69,7 +69,15 @@ private fun parseAssemblyData(rawText: String): List<Assembly> {
 
             val timeMatch = timeRangeRegex.find(timeRange)
             val (startTime, endTime) = if (timeMatch != null) {
-                val (startStr, endStr) = timeMatch.destructured
+                var (startStr, endStr) = timeMatch.destructured
+
+                if (startStr.startsWith("24:")) {
+                    startStr = startStr.replaceFirst("24:", "00:")
+                }
+                if (endStr.startsWith("24:")) {
+                    endStr = endStr.replaceFirst("24:", "00:")
+                }
+
                 LocalDateTime.parse("${date}T$startStr") to LocalDateTime.parse("${date}T$endStr")
             } else {
                 val onlyStartTimeMatch = Regex("""(\d{2}:\d{2})~""").find(timeRange)

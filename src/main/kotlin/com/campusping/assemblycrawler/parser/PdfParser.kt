@@ -1,6 +1,7 @@
 package com.campusping.assemblycrawler.parser
 
 import com.campusping.assemblycrawler.model.Assembly
+import com.campusping.assemblycrawler.other.generateId
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
 import java.nio.file.Paths.*
@@ -76,10 +77,12 @@ private fun parseAssemblyData(rawText: String): List<Assembly> {
                 (startStr?.let { LocalDateTime.parse("${date}T$startStr") }) to null
             }
 
+            val assemblyId = generateId(date, location)
             val participants = participantsStr.replace(",", "").toInt()
 
             result.add(
                 Assembly(
+                    id = assemblyId,
                     date = date,
                     startTime = startTime,
                     endTime = endTime,

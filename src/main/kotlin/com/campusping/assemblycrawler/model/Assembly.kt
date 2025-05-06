@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class Assembly(
+    val id: String,                        // 집회 고유 ID
     val date: LocalDate,                // 집회 날짜
     val startTime: LocalDateTime?,            // 집회 일시 (LocalDateTime으로 변환)
     val endTime: LocalDateTime?,            // 집회 일시 (LocalDateTime으로 변환)

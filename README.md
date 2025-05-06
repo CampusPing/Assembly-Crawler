@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.CampusPing:Assembly-Crawler:1.0.0-rc4")
+    implementation("com.github.CampusPing:Assembly-Crawler:1.0.0-rc5")
 }
 ```
 
@@ -45,6 +45,7 @@ class OneDayAssembly(
 
 ```kotlin
 data class Assembly(
+    val id: Int,
     val date: LocalDate,
     val startTime: LocalDateTime?,
     val endTime: LocalDateTime?,
@@ -54,6 +55,7 @@ data class Assembly(
     val participants: Int,
 )
 ```
+- `id` : 집회 고유 ID
 - `date` : 집회 날짜
 - `startTime` : 집회 시작 시간
 - `endTime` : 집회 종료 시간 (간헐적으로 집회 종료 시간이 없는 경우가 있기 때문에 nullable)

@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.CampusPing:Assembly-Crawler:1.0.0-rc5")
+    implementation("com.github.CampusPing:Assembly-Crawler:1.0.0-rc6")
 }
 ```
 
@@ -20,10 +20,15 @@ dependencies {
 
 ```kotlin
 fun main() {
-    val oneDayAssemblies: List<OneDayAssembly> = AssemblyCrawler.crawl(pageSize = 1)
+    val assemblies = AssemblyCrawler.crawl(
+        targetYear = 2025,
+        targetMonth = 6
+    )
+    println("크롤링된 집회 정보: $assemblies")
 }
 ```
-- `pageSize: Int` : 한 페이지당 10개의 집회 정보를 제공합니다.
+- `targetYear: Int` : 크롤링할 집회 정보의 연도 (예: 2025)
+- `targetMonth: Int` : 크롤링할 집회 정보의 월 (1월: 1, 2월: 2, ..., 12월: 12)
 
 <hr>
 
@@ -31,7 +36,7 @@ fun main() {
 `OneDayAssembly` : 특정 날짜의 하루치 집회 정보 리스트를 제공합니다.
 
 ```kotlin
-class OneDayAssembly(
+data class OneDayAssembly(
     val date: LocalDate,
     val assemblies: List<Assembly>
 )

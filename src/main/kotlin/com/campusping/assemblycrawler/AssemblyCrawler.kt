@@ -74,20 +74,47 @@ object AssemblyCrawler {
         boardUrl: String,
         boardNo: String
     ): OneDayAssembly? {
-        val assemblyPdf = Jsoup.connect(boardUrl).get()
-        val pdfUrl = parsePdfUrl(doc = assemblyPdf, boardNo = boardNo) ?: return null
+        val doc = Jsoup.connect(boardUrl).get()
+
+        val titleText =
+            doc.selectXpath("/html/body/form/div/section/div[1]/div/div[2]/div/div[2]/table/tbody/tr[1]/td[1]")
+                .firstOrNull()?.text() ?: return null
+
+        val dateFromTitle = parseDateFromTitle(titleText) ?: return null
+        println("[제목에서 추출한 날짜] $dateFromTitle")
+
+        // 2. PDF 링크 파싱
+        val pdfUrl = parsePdfUrl(doc = doc, boardNo = boardNo) ?: return null
         println("[PDF 링크] $pdfUrl")
 
         val fileName = "temp_$boardNo.pdf"
         downloadPdf(pdfUrl, fileName)
         println("[PDF 다운로드 완료] $fileName")
 
-        val assemblies = parsePdf(fileName)
-        val firstAssembly = assemblies.firstOrNull() ?: return null
+        val assemblies = parsePdf(fileName, dateFromTitle)
+        if (assemblies.isEmpty()) return null
+
+        val updatedAssemblies = assemblies.map {
+            it.copy(date = dateFromTitle)
+        }
 
         return OneDayAssembly(
-            date = firstAssembly.date,
-            assemblies = assemblies,
+            date = dateFromTitle,
+            assemblies = updatedAssemblies,
         )
+    }
+
+    private fun parseDateFromTitle(title: String): LocalDate? {
+        val regex = Regex("""\d{6}""")
+        val match = regex.find(title)?.value ?: return null
+
+        return try {
+            val year = "20" + match.substring(0, 2)      // 25 -> 2025
+            val month = match.substring(2, 4)             // 07
+            val day = match.substring(4, 6)               // 08
+            LocalDate.parse("$year-$month-$day")
+        } catch (e: Exception) {
+            null
+        }
     }
 }

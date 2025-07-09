@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.CampusPing:Assembly-Crawler:1.0.0-rc8")
+    implementation("com.github.CampusPing:Assembly-Crawler:1.0.0-rc9")
 }
 ```
 

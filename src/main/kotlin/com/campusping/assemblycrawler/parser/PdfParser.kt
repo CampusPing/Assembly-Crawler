@@ -73,7 +73,7 @@ private fun parseAssemblyData(rawText: String, date: LocalDate): List<Assembly> 
                 date.atTime(23, 59)
             }
 
-            val assemblyId = generateId(date, location)
+            val assemblyId = generateId(date, location, startTime, endTime)
 
             oneDayAssembly.add(
                 Assembly(

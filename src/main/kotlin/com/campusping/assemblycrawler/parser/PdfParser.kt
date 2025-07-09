@@ -71,7 +71,7 @@ private fun parseAssemblyData(rawText: String, date: LocalDate): List<Assembly> 
         } else {
             val onlyStartTimeMatch = Regex("""(\d{2}:\d{2})~""").find(timeRange)
             val startStr = onlyStartTimeMatch?.groupValues?.get(1)
-            (startStr?.let { LocalDateTime.parse("${date}T$startStr") }) to null
+            (startStr?.let { LocalDateTime.parse("${date}T$startStr") }) to date.atTime(23, 59)
         }
 
         val assemblyId = generateId(date, location)

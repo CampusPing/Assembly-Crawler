@@ -42,53 +42,52 @@ internal fun parsePdf(fileName: String, overrideDate: LocalDate): List<Assembly>
 
 private fun parseAssemblyData(rawText: String, date: LocalDate): List<Assembly> {
     val noDuplicatedRawText = rawText.removeDuplicateLines()
-
     val result = mutableListOf<Assembly>()
-    val timeRangeRegex = Regex("""(\d{2}:\d{2})~(\d{2}:\d{2})""")
-    val entryRegex = Regex(
-        """(\d{2}:\d{2}~(?:\d{2}:\d{2})?)\s+(.+?)\s*(?:<(.+?)>)?\s*(\d{1,3}(?:,\d{3})*|\d+)(?:명|)\s+([^\n<]+)"""
-    )
 
-    for (match in entryRegex.findAll(noDuplicatedRawText)) {
-        val timeRange = match.groupValues[1]
+    val multiTimeEntryRegex = Regex(
+        """((?:\d{2}:\d{2}~(?:翌\s*)?(?:\d{2}:\d{2})?\s*\n?)+)([^\n]+)\s*(?:<(.+?)>)?\s*(\d{1,3}(?:,\d{3})*|\d+)(?:명|)\s+([^\n<]+)"""
+    )
+    val timeRangeRegex = Regex("""(\d{2}:\d{2})~(?:翌\s*)?(\d{2}:\d{2})?""")
+
+    for (match in multiTimeEntryRegex.findAll(noDuplicatedRawText)) {
+        val allTimeRangesText = match.groupValues[1]
         val location = match.groupValues[2].trim()
         val dong = match.groupValues.getOrNull(3)?.trim() ?: ""
-        val participantsStr = match.groupValues[4]
+        val participants = match.groupValues[4].replace(",", "").toInt()
         val district = match.groupValues[5].replace(" ", "").trim()
 
-        val timeMatch = timeRangeRegex.find(timeRange)
-        val (startTime, endTime) = if (timeMatch != null) {
+        for (timeMatch in timeRangeRegex.findAll(allTimeRangesText)) {
             var (startStr, endStr) = timeMatch.destructured
+            val fullMatch = timeMatch.value
+            val isNextDay = fullMatch.contains("翌")
 
-            if (startStr.startsWith("24:")) {
-                startStr = startStr.replaceFirst("24:", "00:")
+            // 24시 보정
+            if (startStr.startsWith("24:")) startStr = startStr.replaceFirst("24:", "00:")
+            if (endStr.startsWith("24:")) endStr = endStr.replaceFirst("24:", "00:")
+
+            val startTime = LocalDateTime.parse("${date}T$startStr")
+            val endTime = if (endStr.isNotBlank()) {
+                val endDate = if (isNextDay) date.plusDays(1) else date
+                LocalDateTime.parse("${endDate}T$endStr")
+            } else {
+                date.atTime(23, 59)
             }
-            if (endStr.startsWith("24:")) {
-                endStr = endStr.replaceFirst("24:", "00:")
-            }
 
-            LocalDateTime.parse("${date}T$startStr") to LocalDateTime.parse("${date}T$endStr")
-        } else {
-            val onlyStartTimeMatch = Regex("""(\d{2}:\d{2})~""").find(timeRange)
-            val startStr = onlyStartTimeMatch?.groupValues?.get(1)
-            (startStr?.let { LocalDateTime.parse("${date}T$startStr") }) to date.atTime(23, 59)
-        }
+            val assemblyId = generateId(date, "$location-$startStr")
 
-        val assemblyId = generateId(date, location)
-        val participants = participantsStr.replace(",", "").toInt()
-
-        result.add(
-            Assembly(
-                id = assemblyId,
-                date = date,
-                startTime = startTime,
-                endTime = endTime,
-                location = location,
-                dong = dong,
-                participants = participants,
-                district = district
+            result.add(
+                Assembly(
+                    id = assemblyId,
+                    date = date,
+                    startTime = startTime,
+                    endTime = endTime,
+                    location = location,
+                    dong = dong,
+                    participants = participants,
+                    district = district
+                )
             )
-        )
+        }
     }
 
     return result

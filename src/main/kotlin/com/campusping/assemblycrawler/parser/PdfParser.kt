@@ -42,7 +42,7 @@ internal fun parsePdf(fileName: String, overrideDate: LocalDate): List<Assembly>
 
 private fun parseAssemblyData(rawText: String, date: LocalDate): List<Assembly> {
     val noDuplicatedRawText = rawText.removeDuplicateLines()
-    val result = mutableListOf<Assembly>()
+    val oneDayAssembly = mutableListOf<Assembly>()
 
     val multiTimeEntryRegex = Regex(
         """((?:\d{2}:\d{2}~(?:翌\s*)?(?:\d{2}:\d{2})?\s*\n?)+)([^\n]+)\s*(?:<(.+?)>)?\s*(\d{1,3}(?:,\d{3})*|\d+)(?:명|)\s+([^\n<]+)"""
@@ -75,7 +75,7 @@ private fun parseAssemblyData(rawText: String, date: LocalDate): List<Assembly> 
 
             val assemblyId = generateId(date, "$location-$startStr")
 
-            result.add(
+            oneDayAssembly.add(
                 Assembly(
                     id = assemblyId,
                     date = date,
@@ -90,7 +90,7 @@ private fun parseAssemblyData(rawText: String, date: LocalDate): List<Assembly> 
         }
     }
 
-    return result
+    return oneDayAssembly.filterAnomalyParticipant()
 }
 
 private fun String.removeDuplicateLines() = this
@@ -101,3 +101,7 @@ private fun String.removeDuplicateLines() = this
         }
         acc
     }.joinToString("\n")
+
+private fun List<Assembly>.filterAnomalyParticipant(): List<Assembly> {
+    return this.filter { assembly -> assembly.participants > 0 }
+}
